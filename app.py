@@ -193,6 +193,14 @@ def render_dashboard(data: list[dict]) -> None:
             flex-direction: column;
             justify-content: center;
         }}
+        .category-row > div {{
+            border-right: 1px solid #e1e6ee;
+            padding-right: 18px;
+        }}
+        .category-row > div:last-child {{
+            border-right: 0;
+            padding-right: 0;
+        }}
         .category-name {{
             color: #111827;
             font-size: 23px;
@@ -232,8 +240,7 @@ def render_dashboard(data: list[dict]) -> None:
             margin-top: 7px;
         }}
         .count-cell {{
-            border-left: 1px solid #dbe2ea;
-            padding-left: 22px;
+            padding-left: 6px;
         }}
         .application-count {{
             display: inline-flex;
@@ -293,8 +300,17 @@ def render_dashboard(data: list[dict]) -> None:
                 row-gap: 20px;
             }}
             .count-cell {{
-                border-left: 0;
                 padding-left: 0;
+            }}
+            .category-row > div {{
+                border-right: 0;
+                border-bottom: 1px solid #eef0f3;
+                padding-right: 0;
+                padding-bottom: 16px;
+            }}
+            .category-row > div:last-child {{
+                border-bottom: 0;
+                padding-bottom: 0;
             }}
         }}
         </style>
