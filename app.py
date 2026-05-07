@@ -45,7 +45,7 @@ def normalize_region_name(region: str) -> str:
 
 
 @st.cache_data(show_spinner=False)
-def load_dashboard_source() -> pd.DataFrame:
+def load_dashboard_source(summary_mtime: float) -> pd.DataFrame:
     df = pd.read_csv(SUMMARY_FILE, encoding="utf-8-sig")
     numeric_cols = ["item_count", "applied_item_count", "application_rate", "application_count"]
     for col in numeric_cols:
@@ -56,7 +56,7 @@ def load_dashboard_source() -> pd.DataFrame:
 
 
 def build_dashboard_data(region: str, sigungu: str) -> list[dict]:
-    source = load_dashboard_source()
+    source = load_dashboard_source(SUMMARY_FILE.stat().st_mtime)
     selected = source[source["region"].eq(region) & source["sigungu"].eq(sigungu)]
     rows = []
     for category in CATEGORY_ORDER:
@@ -90,7 +90,7 @@ def build_dashboard_data(region: str, sigungu: str) -> list[dict]:
 
 
 def get_region_options() -> pd.DataFrame:
-    source = load_dashboard_source()
+    source = load_dashboard_source(SUMMARY_FILE.stat().st_mtime)
     return (
         source[["region", "sigungu"]]
         .dropna()
