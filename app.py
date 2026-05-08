@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from html import escape
 from pathlib import Path
@@ -103,7 +103,7 @@ def get_region_options() -> pd.DataFrame:
 def render_tag_list(items: list[str], kind: str) -> str:
     if not items:
         return '<span class="empty-value">-</span>'
-    tags = "".join(f'<span class="tag {kind}">{escape(str(item))}</span>' for item in items[:3])
+    tags = "".join(f'<span class="tag {kind}">{escape(str(item))}</span>' for item in items)
     return f'<div class="tag-list">{tags}</div>'
 
 
@@ -172,9 +172,9 @@ def render_dashboard(data: list[dict]) -> None:
         .table-head {{
             background: #f9fafb;
             color: #475467;
-            font-size: 14px;
-            font-weight: 800;
-            padding: 14px 22px;
+            font-size: 23px;
+            font-weight: 850;
+            padding: 17px 22px;
             border-bottom: 1px solid #e5e7eb;
         }}
         .category-row {{
@@ -316,7 +316,7 @@ def render_dashboard(data: list[dict]) -> None:
         </style>
         <main class="table-card">
             <div class="table-head">
-                <div>카테고리</div>
+                <div>구분</div>
                 <div>출원 품목 수 / 비율</div>
                 <div>상표 출원된 품목</div>
                 <div>출원 건수</div>
@@ -377,3 +377,8 @@ with filter_right:
 
 dashboard_data = build_dashboard_data(selected_region, selected_sigungu)
 render_dashboard(dashboard_data)
+
+
+
+
+
