@@ -16,6 +16,7 @@ st.set_page_config(
 
 DATA_DIR = Path(__file__).parent / "data"
 SUMMARY_FILE = DATA_DIR / "dashboard_summary.csv"
+DETAIL_FILE = DATA_DIR / "dashboard_detail.csv"
 
 DEFAULT_REGION = "경상북도"
 DEFAULT_SIGUNGU = "안동시"
@@ -100,6 +101,115 @@ def get_region_options() -> pd.DataFrame:
     )
 
 
+@st.cache_data(show_spinner=False)
+def load_detail_source(detail_mtime: float) -> pd.DataFrame:
+    if not DETAIL_FILE.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(DETAIL_FILE, encoding="utf-8-sig")
+    df["valid_application_count"] = pd.to_numeric(
+        df["valid_application_count"], errors="coerce"
+    ).fillna(0).astype(int)
+    for col in [
+        "region",
+        "sigungu",
+        "category",
+        "item_name",
+        "application_status",
+        "application_numbers",
+        "trademark_names",
+        "lgst_values",
+    ]:
+        df[col] = df[col].fillna("").astype(str)
+    return df
+
+
+def render_detail_section(region: str, sigungu: str) -> None:
+    st.markdown(
+        """
+        <style>        div[data-testid="stExpander"] {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        }
+        div[data-testid="stExpander"] summary {
+            font-size: 24px;
+            font-weight: 850;
+            color: #111827;
+        }
+        .detail-caption {
+            color: #667085;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0.1rem 0 0.8rem 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("\uc804\uccb4 \ubaa9\ub85d \ubcf4\uae30", expanded=False):
+        if not DETAIL_FILE.exists():
+            st.warning("\uc0c1\uc138 \ubaa9\ub85d \ud30c\uc77c\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.")
+            return
+
+        detail = load_detail_source(DETAIL_FILE.stat().st_mtime)
+        selected = detail[detail["region"].eq(region) & detail["sigungu"].eq(sigungu)].copy()
+
+        if selected.empty:
+            st.info("\uc120\ud0dd\ud55c \uc9c0\uc5ed\uc758 \uc0c1\uc138 \ubaa9\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.")
+            return
+
+        st.markdown(
+            f'<div class="detail-caption">{region} {sigungu} \uae30\uc900 \uc804\uccb4 \ucd9c\uc6d0/\ubbf8\ucd9c\uc6d0 \ud56d\ubaa9\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4.</div>',
+            unsafe_allow_html=True,
+        )
+
+        category_options = ["\uc804\uccb4"] + [category for category in CATEGORY_ORDER if category in selected["category"].unique()]
+        status_options = ["\uc804\uccb4", "\uc720\ud6a8\ucd9c\uc6d0", "\ubbf8\ucd9c\uc6d0"]
+
+        filter_a, filter_b, filter_c = st.columns([1.1, 1.1, 2.4])
+        with filter_a:
+            selected_category = st.selectbox("\uc720\ud615", category_options, key="detail_category")
+        with filter_b:
+            selected_status = st.selectbox("\ucd9c\uc6d0\uc0c1\ud0dc", status_options, key="detail_status")
+        with filter_c:
+            keyword = st.text_input("\uac80\uc0c9\uc5b4", placeholder="\ud56d\ubaa9\uba85, \ucd9c\uc6d0\ubc88\ud638 \uac80\uc0c9", key="detail_keyword")
+
+        filtered = selected.copy()
+        if selected_category != "\uc804\uccb4":
+            filtered = filtered[filtered["category"].eq(selected_category)]
+        if selected_status != "\uc804\uccb4":
+            filtered = filtered[filtered["application_status"].eq(selected_status)]
+        if keyword.strip():
+            pattern = keyword.strip()
+            filtered = filtered[
+                filtered["item_name"].str.contains(pattern, case=False, na=False)
+                | filtered["application_numbers"].str.contains(pattern, case=False, na=False)
+            ]
+
+        display = filtered[[
+            "category",
+            "item_name",
+            "application_status",
+            "valid_application_count",
+        ]].rename(columns={
+            "category": "\uad6c\ubd84",
+            "item_name": "\ud56d\ubaa9\uba85",
+            "application_status": "\ucd9c\uc6d0\uc0c1\ud0dc",
+            "valid_application_count": "\uc720\ud6a8\ucd9c\uc6d0\uac74\uc218",
+        })
+
+        st.metric("\uc870\ud68c \ud56d\ubaa9 \uc218", f"{len(display):,}")
+
+        st.dataframe(
+            display,
+            use_container_width=True,
+            height=420,
+            hide_index=True,
+        )
+
+
 def render_tag_list(items: list[str], kind: str) -> str:
     if not items:
         return '<span class="empty-value">-</span>'
@@ -128,7 +238,7 @@ def render_category_row(item: dict) -> str:
             <div class="rate">{application_rate}</div>
         </div>
         <div class="example-cell">
-            <div class="label">상표 출원된 품목 예시</div>
+            
             {applied_examples}
         </div>
         <div class="count-cell">
@@ -136,7 +246,7 @@ def render_category_row(item: dict) -> str:
             <div class="application-count"><strong>{application_count}</strong><span>건</span></div>
         </div>
         <div class="example-cell">
-            <div class="label">상표 미출원 품목 예시</div>
+            
             {unapplied_examples}
         </div>
     </section>
@@ -146,8 +256,7 @@ def render_category_row(item: dict) -> str:
 def render_dashboard(data: list[dict]) -> None:
     rows = "\n".join(render_category_row(item) for item in data)
     html = dedent(f"""
-        <style>
-        .stApp {{
+        <style>        .stApp {{
             background: #f4f6f8;
         }}
         .block-container {{
@@ -318,9 +427,9 @@ def render_dashboard(data: list[dict]) -> None:
             <div class="table-head">
                 <div>구분</div>
                 <div>출원 품목 수 / 비율</div>
-                <div>상표 출원된 품목</div>
+                <div>상표 출원 품목 예시</div>
                 <div>출원 건수</div>
-                <div>상표 미출원 품목</div>
+                <div>상표 미출원 품목 예시</div>
             </div>
             {rows}
         </main>
@@ -335,6 +444,31 @@ default_region_index = region_values.index(DEFAULT_REGION) if DEFAULT_REGION in 
 st.markdown(
     """
     <style>
+    div[data-testid="stElementToolbar"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: flex !important;
+        position: absolute !important;
+        top: -2.25rem !important;
+        right: 0 !important;
+        z-index: 20 !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+        padding: 2px 4px !important;
+    }
+    div[data-testid="stDataFrame"] {
+        position: relative !important;
+    }
+    div[data-testid="stDataFrame"] * {
+        font-size: 16px !important;
+    }
+    div[data-testid="stDataFrame"] [role="columnheader"] * {
+        font-size: 17px !important;
+        font-weight: 800 !important;
+    }
+
     div[data-testid="stSelectbox"] label {
         font-weight: 800 !important;
         color: #111827 !important;
@@ -377,6 +511,12 @@ with filter_right:
 
 dashboard_data = build_dashboard_data(selected_region, selected_sigungu)
 render_dashboard(dashboard_data)
+render_detail_section(selected_region, selected_sigungu)
+
+
+
+
+
 
 
 
