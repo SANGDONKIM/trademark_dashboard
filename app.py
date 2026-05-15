@@ -20,7 +20,7 @@ DETAIL_FILE = DATA_DIR / "dashboard_detail.csv"
 
 DEFAULT_REGION = "경상북도"
 DEFAULT_SIGUNGU = "안동시"
-CATEGORY_ORDER = ["특산품", "유형유산", "무형유산", "자연유산"]
+CATEGORY_ORDER = ["특산품", "유형유산", "무형유산", "자연유산", "문화축제"]
 
 
 def normalize_region_name(region: str) -> str:
@@ -434,7 +434,7 @@ def render_dashboard(data: list[dict]) -> None:
             {rows}
         </main>
     """)
-    components.html(html, height=760, scrolling=False)
+    components.html(html, height=900, scrolling=False)
 
 
 region_options = get_region_options()
