@@ -1,0 +1,24 @@
+﻿# Python / Streamlit
+__pycache__/
+*.py[cod]
+.streamlit/secrets.toml
+streamlit_local*.log
+
+# IDE
+.vscode/
+
+# Large/raw data
+*.sLDH
+*.xlsx
+*.xls
+*.pptx
+*.ipynb
+*.csv
+
+# Keep only dashboard runtime CSVs
+!data/
+!data/dashboard_summary.csv
+!data/dashboard_detail.csv
+
+# Generated/backup folders
+data/구버전_백업_*/
