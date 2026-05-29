@@ -166,7 +166,7 @@ def render_detail_section(region: str, sigungu: str) -> None:
         )
 
         category_options = ["\uc804\uccb4"] + [category for category in CATEGORY_ORDER if category in selected["category"].unique()]
-        status_options = ["\uc804\uccb4", "\uc720\ud6a8\ucd9c\uc6d0", "\ubbf8\ucd9c\uc6d0"]
+        status_options = ["\uc804\uccb4", "\ucd9c\uc6d0", "\ubbf8\ucd9c\uc6d0"]
 
         filter_a, filter_b, filter_c = st.columns([1.1, 1.1, 2.4])
         with filter_a:
@@ -207,6 +207,10 @@ def render_detail_section(region: str, sigungu: str) -> None:
             use_container_width=True,
             height=420,
             hide_index=True,
+        )
+        st.caption(
+            "\ucd9c\uc6d0\uc740 \ucd9c\uc6d0\u00b7\uacf5\uace0\u00b7\ub4f1\ub85d \uc0c1\ud0dc\uc758 \uc0c1\ud45c\ub9cc \ud3ec\ud568\ud558\uba70, "
+            "\ucd9c\uc6d0 \ud6c4 \ucde8\ud558\u00b7\uac70\uc808\u00b7\uc18c\uba78\ub41c \uac74\uc740 \uc81c\uc678"
         )
 
 
@@ -445,18 +449,8 @@ st.markdown(
     """
     <style>
     div[data-testid="stElementToolbar"] {
-        opacity: 1 !important;
-        visibility: visible !important;
-        display: flex !important;
-        position: absolute !important;
-        top: -2.25rem !important;
-        right: 0 !important;
-        z-index: 20 !important;
-        background: rgba(255, 255, 255, 0.96) !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 10px !important;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
-        padding: 2px 4px !important;
+        display: none !important;
+        visibility: hidden !important;
     }
     div[data-testid="stDataFrame"] {
         position: relative !important;
