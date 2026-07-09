@@ -166,7 +166,14 @@ def render_detail_section(region: str, sigungu: str) -> None:
         )
 
         category_options = ["\uc804\uccb4"] + [category for category in CATEGORY_ORDER if category in selected["category"].unique()]
-        status_options = ["\uc804\uccb4", "\ucd9c\uc6d0", "\ubbf8\ucd9c\uc6d0"]
+        status_order = ["\uc720\ud6a8\ucd9c\uc6d0", "\ucd9c\uc6d0", "\ubbf8\ucd9c\uc6d0"]
+        existing_statuses = selected["application_status"].dropna().unique().tolist()
+        status_options = ["\uc804\uccb4"] + [
+            status for status in status_order if status in existing_statuses
+        ]
+        status_options += [
+            status for status in sorted(existing_statuses) if status not in status_options
+        ]
 
         filter_a, filter_b, filter_c = st.columns([1.1, 1.1, 2.4])
         with filter_a:
